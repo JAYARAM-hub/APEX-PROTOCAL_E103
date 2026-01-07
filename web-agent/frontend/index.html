@@ -1,54 +1,490 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Navigation AI Agent</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Website Navigator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 100vh;
+        }
+
+        /* LEFT PANEL - Chat */
+        .chat-panel {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .message.bot {
+            background: #f0f0f0;
+            color: #333;
+            align-self: flex-start;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .message.status {
+            background: #fff3cd;
+            color: #856404;
+            align-self: flex-start;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .chat-input-area {
+            border-top: 1px solid #e0e0e0;
+            padding: 16px;
+            background: white;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        #send-btn:active {
+            transform: translateY(0);
+        }
+
+        #send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* RIGHT PANEL - Steps */
+        .steps-panel {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .steps-header {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .steps-header::before {
+            content: "✓";
+            font-size: 24px;
+        }
+
+        .steps-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .empty-state {
+            color: #999;
+            text-align: center;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .step-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateX(4px);
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .step-text {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .step-text strong {
+            color: #667eea;
+        }
+
+        /* Features section */
+        .features {
+            padding: 16px;
+            background: #f8f9ff;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .features-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #666;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .message {
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🤖 Web Navigation Agent</h1>
-      <p>I'll guide you through any website</p>
+    <div class="container">
+        <!-- LEFT PANEL: Chat -->
+        <div class="chat-panel">
+            <div class="chat-header">💬 AI Website Assistant</div>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-input-area">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="user-input"
+                        placeholder="e.g., Book a hotel, Find documentation..."
+                        autocomplete="off"
+                    />
+                    <button id="send-btn">SEND</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Steps Only -->
+        <div class="steps-panel">
+            <div class="steps-header">Step-by-Step Guide</div>
+            <div class="steps-content" id="steps-container">
+                <div class="empty-state">
+                    👋 Start a conversation to see steps here
+                </div>
+            </div>
+            <div class="features">
+                <div class="features-title">✨ Features</div>
+                <div class="features-list">
+                    <div class="feature-item">🌐 Works on any website</div>
+                    <div class="feature-item">⚡ Fast & accurate</div>
+                    <div class="feature-item">📱 Mobile-friendly</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="main">
-      <div class="chat-box" id="chat-box">
-        <div class="message bot">
-          <p>👋 Hello! I'm here to help you navigate any website.</p>
-        </div>
-        <div class="message bot">
-          <p>✨ What do you need to do? For example:</p>
-          <ul style="margin-top: 8px; margin-left: 20px;">
-            <li>Book a flight ticket</li>
-            <li>Find refund policy</li>
-            <li>Create an account</li>
-            <li>Track an order</li>
-          </ul>
-        </div>
-      </div>
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const stepsContainer = document.getElementById('steps-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
 
-      <div class="input-area">
-        <div class="form-group">
-          <input 
-            type="text" 
-            id="user-input" 
-            placeholder="What do you want to do?"
-            class="chat-input"
-          />
-          <button id="send-btn" class="btn btn-primary">Send</button>
-          <div id="status" class="status"></div>
-        </div>
+        let currentStep = 'intent'; // 'intent' -> 'website' -> 'processing'
+        let userIntent = '';
+        let websiteUrl = '';
+        let scrapedPages = null;
 
-        <div id="response-box" class="response-box" style="display: none;">
-          <h3>📋 Step-by-Step Guide</h3>
-          <div id="steps-container"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+        // Add message to chat
+        function addMessage(text, type) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+            messageEl.textContent = text;
+            chatBox.appendChild(messageEl);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-  <script src="script.js"></script>
+        // Display steps on right panel
+        function displaySteps(steps) {
+            stepsContainer.innerHTML = '';
+
+            if (!steps || steps.length === 0) {
+                stepsContainer.innerHTML = '<div class="empty-state">No steps generated</div>';
+                return;
+            }
+
+            steps.forEach((step) => {
+                const stepCard = document.createElement('div');
+                stepCard.className = 'step-card';
+                stepCard.innerHTML = `
+                    <div class="step-number">Step ${step.step}</div>
+                    <div class="step-text">${step.action}</div>
+                `;
+                stepsContainer.appendChild(stepCard);
+            });
+        }
+
+        // Parse steps from AI response
+        function parseSteps(text) {
+            const lines = text.split('\n');
+            const steps = [];
+            let stepNum = 1;
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+
+                if (
+                    trimmed.match(/^step\s+\d+/i) ||
+                    trimmed.match(/^\d+\./) ||
+                    trimmed.match(/^-\s+step/i)
+                ) {
+                    let action = trimmed
+                        .replace(/^step\s+\d+[:.]/i, '')
+                        .replace(/^\d+\.\s*/, '')
+                        .replace(/^-\s+step\s+\d+[:.]/i, '')
+                        .trim();
+
+                    if (action) {
+                        steps.push({
+                            step: stepNum,
+                            action: action,
+                        });
+                        stepNum++;
+                    }
+                }
+            }
+
+            return steps.slice(0, 10);
+        }
+
+        // Scrape website
+        async function scrapeWebsite(url) {
+            try {
+                addMessage('status', `🔍 Scraping ${url}...`);
+
+                const response = await fetch('http://localhost:5000/api/scrape', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ website_url: url }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                addMessage(
+                    `✅ Found ${data.links_count} links and ${data.headings_count} sections`,
+                    'status'
+                );
+
+                return data.pages;
+            } catch (error) {
+                addMessage(`❌ Scrape failed: ${error.message}`, 'status');
+                return null;
+            }
+        }
+
+        // Ask AI agent
+        async function askAgent(query, pages) {
+            try {
+                addMessage(`🤖 Processing...`, 'status');
+                addMessage(`Finding the best way to "${query}"...`, 'status');
+
+                const response = await fetch('http://localhost:5000/api/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, pages }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage(data.response, 'bot');
+
+                    const steps = parseSteps(data.response);
+                    displaySteps(steps);
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                addMessage(`❌ Agent error: ${error.message}`, 'status');
+                displaySteps([]);
+            }
+        }
+
+        // Handle send
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            userInput.value = '';
+            addMessage(text, 'user');
+
+            if (currentStep === 'intent') {
+                userIntent = text;
+                currentStep = 'website';
+                addMessage(
+                    'Which website would you like me to help with? (e.g., wikipedia.org, github.com)',
+                    'bot'
+                );
+            } else if (currentStep === 'website') {
+                currentStep = 'processing';
+                sendBtn.disabled = true;
+
+                let url = text;
+                if (!url.startsWith('http')) {
+                    url = `https://${url}`;
+                }
+
+                websiteUrl = url;
+                scrapedPages = await scrapeWebsite(url);
+
+                if (scrapedPages) {
+                    await askAgent(userIntent, scrapedPages);
+                }
+
+                currentStep = 'intent';
+                sendBtn.disabled = false;
+                addMessage(
+                    'Want to try something else? Describe what you need.',
+                    'bot'
+                );
+            }
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+
+        // Initial greeting
+        setTimeout(() => {
+            addMessage(
+                "👋 Hi! I'm your AI website assistant. What would you like to do?",
+                'bot'
+            );
+        }, 500);
+    </script>
 </body>
 </html>
