@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Navigation AI Agent</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🤖 Web Navigation Agent</h1>
+      <p>I'll guide you through any website</p>
+    </div>
+
+    <div class="main">
+      <div class="chat-box" id="chat-box">
+        <div class="message bot">
+          <p>👋 Hello! I'm here to help you navigate any website.</p>
+        </div>
+        <div class="message bot">
+          <p>✨ What do you need to do? For example:</p>
+          <ul style="margin-top: 8px; margin-left: 20px;">
+            <li>Book a flight ticket</li>
+            <li>Find refund policy</li>
+            <li>Create an account</li>
+            <li>Track an order</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="form-group">
+          <input 
+            type="text" 
+            id="user-input" 
+            placeholder="What do you want to do?"
+            class="chat-input"
+          />
+          <button id="send-btn" class="btn btn-primary">Send</button>
+          <div id="status" class="status"></div>
+        </div>
+
+        <div id="response-box" class="response-box" style="display: none;">
+          <h3>📋 Step-by-Step Guide</h3>
+          <div id="steps-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
